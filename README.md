@@ -19,7 +19,7 @@ The official Jellyfin receiver (the app your TV opens when you hit the cast butt
 This integration is that someone.
 
 > [!NOTE]
-> It's what plays shows and movies on my TVs since 2026-11-09 (Home Assistant 2026.11, Jellyfin 12.4). Everything in here works in my testing on live Chromecasts: playing by name, `library`, the filtered TV picker, and `shuffle` (a random episode starts in a few seconds, and the next one follows by itself when it ends). The newest bit, `next_track` / `previous_track`, was tested on a real Chromecast with the same code, but not from inside my own Home Assistant yet.
+> It's what plays shows and movies on my TVs since 2026-11-09 (Home Assistant 2026.11, Jellyfin 12.4). Everything in here works in my testing on live Chromecasts: playing by name, `library`, the filtered TV picker, `shuffle` (a random episode starts in a few seconds, and the next one follows by itself when it ends), and skipping: next and previous from my dashboards, through a universal media player (see [*Skipping*](#skipping)), move through a shuffled show in 4 to 10 seconds.
 > ᵃⁿᵈ ʷᵉ ⁿᵉᵉᵈ ᵇᵉᵗᵃ ᵗᵉˢᵗᵉʳˢ
 
 ---
