@@ -18,7 +18,7 @@ The official Jellyfin receiver (the app your TV opens when you hit the cast butt
 This integration is that someone.
 
 > [!NOTE]
-> It's what plays shows and movies on my TVs since 2026-11-09 (Home Assistant 2026.11, Jellyfin 12.4). Playing by name, `library`, `shuffle` and the filtered TV picker came the day after: they pass the test suite (a real Home Assistant core with a fake Chromecast) and were checked against my own Jellyfin server, but haven't cast to a real TV yet.
+> It's what plays shows and movies on my TVs since 2026-11-09 (Home Assistant 2026.11, Jellyfin 12.4). Playing by name and `library` came the day after, and they work in my testing on live Chromecasts. `shuffle` and the filtered TV picker are the newest: they pass the test suite (a real Home Assistant core with a fake Chromecast) and were checked against my own Jellyfin server, but haven't met a real TV yet.
 > ᵃⁿᵈ ʷᵉ ⁿᵉᵉᵈ ᵇᵉᵗᵃ ᵗᵉˢᵗᵉʳˢ
 
 ---
