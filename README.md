@@ -4,6 +4,7 @@
   <a href="#the-token"><img src="https://img.shields.io/badge/Token-not_an_API_key-d29922" alt="Ask me how I know"></a>
   <a href="#playing-by-name"><img src="https://img.shields.io/badge/Play-by_name-0e8a16" alt="Just say Futurama"></a>
   <a href="#shuffling-a-show"><img src="https://img.shields.io/badge/Shuffle-until_you_stop_it-8250df" alt="200 episodes. Good luck finishing that"></a>
+  <a href="#skipping"><img src="https://img.shields.io/badge/Skip-next_%26_previous-1f6feb" alt="Because the next button said no"></a>
   <a href="#good-to-know"><img src="https://img.shields.io/badge/Good_to_know-the_fine_print-cf222e" alt="Read this before yelling at me"></a>
 </p>
 
@@ -18,7 +19,7 @@ The official Jellyfin receiver (the app your TV opens when you hit the cast butt
 This integration is that someone.
 
 > [!NOTE]
-> It's what plays shows and movies on my TVs since 2026-11-09 (Home Assistant 2026.11, Jellyfin 12.4). Everything in here works in my testing on live Chromecasts: playing by name, `library`, the filtered TV picker, and `shuffle` (a random episode starts in a few seconds, and the next one follows by itself when it ends).
+> It's what plays shows and movies on my TVs since 2026-11-09 (Home Assistant 2026.11, Jellyfin 12.4). Everything in here works in my testing on live Chromecasts: playing by name, `library`, the filtered TV picker, and `shuffle` (a random episode starts in a few seconds, and the next one follows by itself when it ends). The newest bit, `next_track` / `previous_track`, was tested on a real Chromecast with the same code, but not from inside my own Home Assistant yet.
 > ᵃⁿᵈ ʷᵉ ⁿᵉᵉᵈ ᵇᵉᵗᵃ ᵗᵉˢᵗᵉʳˢ
 
 ---
@@ -128,9 +129,42 @@ data:
 
 Every episode in random order, then all of them again in a new order, and so on, until you stop it or play something else. It goes to the TV as one queue of 200 episodes: no repeats before everything has played once, never the same episode twice in a row. That's about 70 hours of a 22-minute show, so in practice it runs until you stop it.
 
-The queue lives on the TV. Home Assistant sends it once and forgets about it, and the receiver moves to the next episode each time one ends. Home Assistant's next button won't skip, though: the Cast integration doesn't offer next/previous while the Jellyfin receiver plays. The receiver has its own Shuffle too, but it queues 50 episodes and stops, which on a short show means you're done after one pass.
+The queue lives on the TV. Home Assistant sends it once and forgets about it, and the receiver moves to the next episode each time one ends. To skip, see [*Skipping*](#skipping). The receiver has its own Shuffle too, but it queues 50 episodes and stops, which on a short show means you're done after one pass.
 
 `shuffle` works with a show's own `item_id` too. It replaces `episode`, and anything that isn't a show just plays normally.
+
+## Skipping
+
+Home Assistant's own `media_player.media_next_track` gets refused on the cast entity. The Google Cast integration only shows next/previous when the app on the TV says it supports them, and the Jellyfin receiver doesn't (it keeps its own playlist instead of Google's queue). So:
+
+```yaml
+action: jellyfin_cast.next_track      # or jellyfin_cast.previous_track
+data:
+  entity_id: media_player.living_room_tv
+```
+
+They send the receiver the same next/previous the Jellyfin apps send, and wait until the TV plays the other item. The response says what plays now (name, series, season, episode), or `ok: false` when there's nothing that way: the end of the queue, or a single movie. They never launch the receiver. If something else is on the TV, you just get an error back.
+
+Want the regular next/previous buttons back on your dashboards? Wrap the TV in a universal media player and point its commands there:
+
+```yaml
+media_player:
+  - platform: universal
+    name: Living room TV
+    children:
+      - media_player.living_room_tv
+    commands:
+      media_next_track:
+        action: jellyfin_cast.next_track
+        data:
+          entity_id: media_player.living_room_tv
+      media_previous_track:
+        action: jellyfin_cast.previous_track
+        data:
+          entity_id: media_player.living_room_tv
+```
+
+My TVs do a fancier version of that: their skip script asks Jellyfin when its receiver is on screen, and tries a bunch of other ways when it isn't.
 
 ## Finding an item_id
 
@@ -158,7 +192,7 @@ pip install -r requirements_test.txt
 pytest
 ```
 
-39 tests, running a real Home Assistant core with a fake Chromecast and a mocked Jellyfin API.
+48 tests, running a real Home Assistant core with a fake Chromecast and a mocked Jellyfin API.
 
 ---
 
