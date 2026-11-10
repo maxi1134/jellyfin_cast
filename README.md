@@ -18,7 +18,7 @@ The official Jellyfin receiver (the app your TV opens when you hit the cast butt
 This integration is that someone.
 
 > [!NOTE]
-> It's what plays shows and movies on my TVs since 2026-11-09 (Home Assistant 2026.11, Jellyfin 12.4). Playing by name and `library` came the day after, and they work in my testing on live Chromecasts. `shuffle` and the filtered TV picker are the newest: they pass the test suite (a real Home Assistant core with a fake Chromecast) and were checked against my own Jellyfin server, but haven't met a real TV yet.
+> It's what plays shows and movies on my TVs since 2026-11-09 (Home Assistant 2026.11, Jellyfin 12.4). Everything in here works in my testing on live Chromecasts: playing by name, `library`, the filtered TV picker, and `shuffle` (a random episode starts in a few seconds, and the next one follows by itself when it ends).
 > ᵃⁿᵈ ʷᵉ ⁿᵉᵉᵈ ᵇᵉᵗᵃ ᵗᵉˢᵗᵉʳˢ
 
 ---
@@ -128,7 +128,7 @@ data:
 
 Every episode in random order, then all of them again in a new order, and so on, until you stop it or play something else. It goes to the TV as one queue of 200 episodes: no repeats before everything has played once, never the same episode twice in a row. That's about 70 hours of a 22-minute show, so in practice it runs until you stop it.
 
-The queue lives on the TV. Home Assistant sends it once and forgets about it, and skipping on the TV just moves through it. The receiver has its own Shuffle too, but it queues 50 episodes and stops, which on a short show means you're done after one pass.
+The queue lives on the TV. Home Assistant sends it once and forgets about it, and the receiver moves to the next episode each time one ends. Home Assistant's next button won't skip, though: the Cast integration doesn't offer next/previous while the Jellyfin receiver plays. The receiver has its own Shuffle too, but it queues 50 episodes and stops, which on a short show means you're done after one pass.
 
 `shuffle` works with a show's own `item_id` too. It replaces `episode`, and anything that isn't a show just plays normally.
 
@@ -146,6 +146,7 @@ In the action editor, the TV list only shows cast players that can actually show
 ## Good to know
 
 - **Old devices:** my 1st-gen Nest Hub won't play what the receiver picks for a 4K movie (720p worked fine). I send the Hub to the Default Media Receiver instead, and use the `ok: false` answer as a fallback for everything else.
+- **Some files end early.** If an episode's stream is shorter than the length Jellyfin reports, the receiver keeps waiting for those last few seconds and never moves on to the next one. One of my Futurama episodes does it (4.5 seconds short); the others I tried moved along just fine.
 - **Restarting Home Assistant stops what it cast.** Home Assistant is the only sender, and the receiver quits when its last sender leaves. Don't restart in the middle of movie night.
 - Each TV shows up in Jellyfin as a *Chromecast* session called "<TV name> Jellyfin". If you have the Jellyfin integration, it'll give you a media player for it.
 - `receiver.py` only needs `pychromecast`, so you can poke at a real TV outside Home Assistant.
