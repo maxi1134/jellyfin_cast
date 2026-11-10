@@ -29,6 +29,7 @@ class FakeReceiverController:
     def launch_app(self, app_id: str, *, force_launch: bool = False, callback_function: Any = None) -> None:
         self.cast.launched.append(app_id)
         self.app_id = app_id
+        self.cast.app_id = app_id
         self.cast.socket_client.app_namespaces = ["urn:x-cast:com.connectsdk", "urn:x-cast:com.google.cast.media"]
         if callback_function:
             callback_function(True, None)
@@ -54,6 +55,9 @@ class FakeChromecast:
     def __init__(self, outcome: str) -> None:
         self.outcome = outcome
         self.loads = 0
+        self.app_id: str | None = None
+        self.queue: list[str] = []
+        self.index = 0
         self.sent: list[tuple[str, dict]] = []
         self.launched: list[str] = []
         self.socket_client = FakeSocketClient(self)
@@ -73,9 +77,19 @@ class FakeChromecast:
         if self.outcome == "broadcast_error":
             self.handler_receive({"type": "playbackerror", "message": "NoCompatibleStream"})
             return
+        # Like the real receiver: PlayNow loads a queue and plays its first item, NextTrack and
+        # PreviousTrack move through it and do nothing at either end.
+        if data["command"] == "PlayNow":
+            self.queue, self.index = [item["Id"] for item in data["options"]["items"]], 0
+        elif data["command"] == "NextTrack" and self.index + 1 < len(self.queue):
+            self.index += 1
+        elif data["command"] == "PreviousTrack" and self.index > 0:
+            self.index -= 1
+        else:
+            return
         status = MediaStatus()
-        first = data["options"]["items"][0]["Id"]  # a queue starts with its first item
-        status.content_id = f"http://jf.local:8096/videos/{first}/master.m3u8?PlaySessionId=ps1&ApiKey={TOKEN}"
+        playing = self.queue[self.index]
+        status.content_id = f"http://jf.local:8096/videos/{playing}/master.m3u8?PlaySessionId=ps1&ApiKey={TOKEN}"
         self.loads += 1
         status.media_session_id = self.loads  # every load is a new media session
         if self.outcome == "play":
